@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent } from "./card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";
+import { Card, CardContent } from "./components/ui/card.jsx";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs.jsx";
 
 export default function Dashboard() {
   const [trades, setTrades] = useState([]);
@@ -87,3 +87,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
