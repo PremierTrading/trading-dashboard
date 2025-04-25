@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent } from "./components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs";
+import { Card, CardContent } from "./card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs";
 
 export default function Dashboard() {
   const [trades, setTrades] = useState([]);
@@ -8,7 +8,11 @@ export default function Dashboard() {
   useEffect(() => {
     fetch("https://tradingview-webhook-1.onrender.com/trades")
       .then((res) => res.json())
-      .then((data) => setTrades(data));
+      .then((data) => setTrades(data))
+      .catch((err) => {
+        console.error("Failed to fetch trades:", err);
+        setTrades([]);
+      });
   }, []);
 
   const totalTrades = trades.length;
@@ -20,58 +24,66 @@ export default function Dashboard() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Trading Dashboard</h1>
-      <Tabs defaultValue="overview">
-        <TabsList className="mb-4">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="winners">Winners</TabsTrigger>
-          <TabsTrigger value="losers">Losers</TabsTrigger>
-        </TabsList>
+      {trades.length === 0 ? (
+        <p className="text-gray-500">No trades found or still loading...</p>
+      ) : (
+        <Tabs defaultValue="overview">
+          <TabsList className="mb-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="winners">Winners</TabsTrigger>
+            <TabsTrigger value="losers">Losers</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="overview">
-          <div className="grid grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="font-semibold">Total P&L</h2>
-                <p className="text-lg">${pnl}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="font-semibold">Win Rate</h2>
-                <p className="text-lg">{winRate}%</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="font-semibold">Total Trades</h2>
-                <p className="text-lg">{totalTrades}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="font-semibold">Winners / Losers</h2>
-                <p className="text-lg">{winners.length} / {losers.length}</p>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+          <TabsContent value="overview">
+            <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="font-semibold">Total P&L</h2>
+                  <p className="text-lg">${pnl}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="font-semibold">Win Rate</h2>
+                  <p className="text-lg">{winRate}%</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="font-semibold">Total Trades</h2>
+                  <p className="text-lg">{totalTrades}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4">
+                  <h2 className="font-semibold">Winners / Losers</h2>
+                  <p className="text-lg">{winners.length} / {losers.length}</p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
 
-        <TabsContent value="winners">
-          <ul className="space-y-2">
-            {winners.map((trade, index) => (
-              <li key={index} className="p-2 border rounded">{trade.symbol} - {trade.action} @ {trade.price}</li>
-            ))}
-          </ul>
-        </TabsContent>
+          <TabsContent value="winners">
+            <ul className="space-y-2">
+              {winners.map((trade, index) => (
+                <li key={index} className="p-2 border rounded">
+                  {trade.symbol} - {trade.action} @ {trade.price}
+                </li>
+              ))}
+            </ul>
+          </TabsContent>
 
-        <TabsContent value="losers">
-          <ul className="space-y-2">
-            {losers.map((trade, index) => (
-              <li key={index} className="p-2 border rounded">{trade.symbol} - {trade.action} @ {trade.price}</li>
-            ))}
-          </ul>
-        </TabsContent>
-      </Tabs>
+          <TabsContent value="losers">
+            <ul className="space-y-2">
+              {losers.map((trade, index) => (
+                <li key={index} className="p-2 border rounded">
+                  {trade.symbol} - {trade.action} @ {trade.price}
+                </li>
+              ))}
+            </ul>
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
