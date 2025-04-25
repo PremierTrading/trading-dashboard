@@ -8,7 +8,10 @@ export default function Dashboard() {
   useEffect(() => {
     fetch("https://tradingview-webhook-1.onrender.com/trades")
       .then((res) => res.json())
-      .then((data) => setTrades(data))
+      .then((data) => {
+        console.log("📦 Trades fetched:", data); // ✅ Debug log
+        setTrades(data);
+      })
       .catch((err) => {
         console.error("Failed to fetch trades:", err);
         setTrades([]);
@@ -19,7 +22,7 @@ export default function Dashboard() {
   const winners = trades.filter(t => t.result === "win");
   const losers = trades.filter(t => t.result === "loss");
   const winRate = totalTrades ? ((winners.length / totalTrades) * 100).toFixed(2) : 0;
-  const pnl = trades.reduce((acc, t) => acc + (t.result === "win" ? 100 : -50), 0); // Example logic
+  const pnl = trades.reduce((acc, t) => acc + (t.result === "win" ? 100 : -50), 0);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -87,4 +90,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
