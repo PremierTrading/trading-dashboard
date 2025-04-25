@@ -35,16 +35,18 @@ export default function Dashboard() {
         <button
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           onClick={() => {
-            fetch("https://tradingview-webhook-1.onrender.com/reset", {
-              method: "POST"
-            })
-              .then(() => {
-                console.log("🔁 Trades cleared");
-                setTrades([]);
+            if (window.confirm("Are you sure you want to clear all trades? This cannot be undone.")) {
+              fetch("https://tradingview-webhook-1.onrender.com/reset", {
+                method: "POST"
               })
-              .catch((err) => {
-                console.error("Failed to reset trades:", err);
-              });
+                .then(() => {
+                  console.log("🔁 Trades cleared");
+                  setTrades([]);
+                })
+                .catch((err) => {
+                  console.error("Failed to reset trades:", err);
+                });
+            }
           }}
         >
           Clear Trades
