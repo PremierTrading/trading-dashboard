@@ -30,7 +30,26 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Trading Dashboard</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Trading Dashboard</h1>
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          onClick={() => {
+            fetch("https://tradingview-webhook-1.onrender.com/reset", {
+              method: "POST"
+            })
+              .then(() => {
+                console.log("🔁 Trades cleared");
+                setTrades([]);
+              })
+              .catch((err) => {
+                console.error("Failed to reset trades:", err);
+              });
+          }}
+        >
+          Clear Trades
+        </button>
+      </div>
 
       {trades.length === 0 ? (
         <p className="text-gray-500">No trades found or still loading...</p>
