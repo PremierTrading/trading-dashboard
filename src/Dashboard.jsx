@@ -9,14 +9,24 @@ export default function Dashboard() {
     fetch("https://tradingview-webhook-1.onrender.com/trades")
       .then((res) => res.json())
       .then((data) => {
-        console.log("📦 Trades fetched:", data); // ✅ Debug log
-        setTrades(data);
+        console.log("📦 Trades fetched:", data);
+        if (Array.isArray(data)) {
+          setTrades(data);
+        } else {
+          console.warn("⚠️ Response was not an array:", data);
+          setTrades([]);
+        }
       })
       .catch((err) => {
-        console.error("Failed to fetch trades:", err);
+        console.error("❌ Failed to fetch trades:", err);
         setTrades([]);
       });
   }, []);
+
+  if (!Array.isArray(trades)) {
+    console.error("⚠️ 'trades' is not an array:", trades);
+    return <p className="text-red-600">Something went wrong loading trades.</p>;
+  }
 
   const totalTrades = trades.length;
   const winners = trades.filter(t => t.result === "win");
