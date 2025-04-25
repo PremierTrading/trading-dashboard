@@ -4,8 +4,13 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs.j
 
 export default function Dashboard() {
   const [trades, setTrades] = useState([]);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [inputPassword, setInputPassword] = useState("");
+
+  const CORRECT_PASSWORD = "Money2025"; // ← change this!
 
   useEffect(() => {
+    if (!authenticated) return;
     fetch("https://tradingview-webhook-1.onrender.com/trades")
       .then((res) => res.json())
       .then((data) => {
@@ -20,13 +25,42 @@ export default function Dashboard() {
         console.error("❌ Failed to fetch trades:", err);
         setTrades([]);
       });
-  }, []);
+  }, [authenticated]);
 
   const totalTrades = trades.length;
   const winners = trades.filter(t => t.result === "win");
   const losers = trades.filter(t => t.result === "loss");
   const winRate = totalTrades ? ((winners.length / totalTrades) * 100).toFixed(2) : 0;
   const pnl = trades.reduce((acc, t) => acc + (t.result === "win" ? 100 : -50), 0);
+
+  if (!authenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white shadow-lg p-6 rounded w-full max-w-sm">
+          <h2 className="text-xl font-bold mb-4 text-center">Enter Dashboard Password</h2>
+          <input
+            type="password"
+            value={inputPassword}
+            onChange={(e) => setInputPassword(e.target.value)}
+            placeholder="Password"
+            className="w-full px-3 py-2 border rounded mb-4"
+          />
+          <button
+            onClick={() => {
+              if (inputPassword === CORRECT_PASSWORD) {
+                setAuthenticated(true);
+              } else {
+                alert("❌ Incorrect password");
+              }
+            }}
+            className="bg-blue-500 hover:bg-blue-600 text-white w-full py-2 rounded"
+          >
+            Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -58,30 +92,10 @@ export default function Dashboard() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="font-semibold">Total P&L</h2>
-                <p className="text-lg">${pnl}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="font-semibold">Win Rate</h2>
-                <p className="text-lg">{winRate}%</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="font-semibold">Total Trades</h2>
-                <p className="text-lg">{totalTrades}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="font-semibold">Winners / Losers</h2>
-                <p className="text-lg">{winners.length} / {losers.length}</p>
-              </CardContent>
-            </Card>
+            <Card><CardContent className="p-4"><h2 className="font-semibold">Total P&L</h2><p className="text-lg">${pnl}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><h2 className="font-semibold">Win Rate</h2><p className="text-lg">{winRate}%</p></CardContent></Card>
+            <Card><CardContent className="p-4"><h2 className="font-semibold">Total Trades</h2><p className="text-lg">{totalTrades}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><h2 className="font-semibold">Winners / Losers</h2><p className="text-lg">{winners.length} / {losers.length}</p></CardContent></Card>
           </div>
 
           <Tabs defaultValue="overview">
