@@ -1,7 +1,6 @@
-// Dashboard.jsx
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Card, CardContent } from "./components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs";
 
 export default function Dashboard() {
   const [trades, setTrades] = useState([]);
