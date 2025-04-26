@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Card from './card';
+import Card from './Card';
 import Tabs from './tabs';
 
 const backendUrl = "https://tradingview-webhook-7lbp.onrender.com"; // ✨ Updated backend URL here!
