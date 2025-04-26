@@ -3,30 +3,64 @@ import { Card, CardContent } from "./components/ui/card.jsx";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "./components/ui/tabs.jsx";
 
 export default function Dashboard() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [apiKey, setApiKey] = useState(localStorage.getItem('apiKey') || "");
+  const [authenticated, setAuthenticated] = useState(!!apiKey);
   const [trades, setTrades] = useState([]);
-  const [authenticated, setAuthenticated] = useState(false);
-  const [inputPassword, setInputPassword] = useState("");
-  const [apiKey, setApiKey] = useState(""); // ✅ NEW STATE for API KEY
-
-  const CORRECT_PASSWORD = "Money2025"; // ← change this to whatever you want
 
   useEffect(() => {
-    if (!authenticated || !apiKey) return;
-    fetch(`https://tradingview-webhook-1.onrender.com/trades?key=${apiKey}`)
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("📦 Trades fetched:", data);
-        if (Array.isArray(data)) {
-          setTrades(data);
-        } else {
-          setTrades([]);
-        }
-      })
-      .catch((err) => {
-        console.error("❌ Failed to fetch trades:", err);
-        setTrades([]);
-      });
+    if (authenticated && apiKey) {
+      fetchTrades();
+    }
   }, [authenticated, apiKey]);
+
+  const fetchTrades = async () => {
+    try {
+      const res = await fetch(`https://tradingview-webhook-1.onrender.com/trades?key=${apiKey}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setTrades(data);
+      } else {
+        console.error("Unexpected response:", data);
+        setTrades([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch trades:", err);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      const res = await fetch("https://tradingview-webhook-1.onrender.com/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('apiKey', data.api_key);
+        setApiKey(data.api_key);
+        setAuthenticated(true);
+      } else {
+        const errorData = await res.json();
+        alert(errorData.error || "Login failed");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("Server error during login");
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('apiKey');
+    setAuthenticated(false);
+    setApiKey("");
+    setEmail("");
+    setPassword("");
+    setTrades([]);
+  };
 
   const totalTrades = trades.length;
   const winners = trades.filter(t => t.result === "win");
@@ -38,28 +72,23 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white shadow-lg p-6 rounded w-full max-w-sm">
-          <h2 className="text-xl font-bold mb-4 text-center">Enter Dashboard Password</h2>
+          <h2 className="text-xl font-bold mb-4 text-center">Login to Dashboard</h2>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full px-3 py-2 border rounded mb-4"
+          />
           <input
             type="password"
-            value={inputPassword}
-            onChange={(e) => setInputPassword(e.target.value)}
             placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full px-3 py-2 border rounded mb-4"
           />
           <button
-            onClick={() => {
-              if (inputPassword === CORRECT_PASSWORD) {
-                const userApiKey = window.prompt("✅ Enter your API Key:");
-                if (userApiKey) {
-                  setApiKey(userApiKey);
-                  setAuthenticated(true);
-                } else {
-                  alert("❌ API Key is required!");
-                }
-              } else {
-                alert("❌ Incorrect password");
-              }
-            }}
+            onClick={handleLogin}
             className="bg-blue-500 hover:bg-blue-600 text-white w-full py-2 rounded"
           >
             Login
@@ -73,25 +102,20 @@ export default function Dashboard() {
     <div className="p-6 max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Trading Dashboard</h1>
-        <button
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-          onClick={() => {
-            if (window.confirm("Are you sure you want to clear all trades? This cannot be undone.")) {
-              fetch(`https://tradingview-webhook-1.onrender.com/reset?key=${apiKey}`, {
-                method: "POST"
-              })
-                .then(() => {
-                  console.log("🔁 Trades cleared");
-                  setTrades([]);
-                })
-                .catch((err) => {
-                  console.error("Failed to reset trades:", err);
-                });
-            }
-          }}
-        >
-          Clear Trades
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={fetchTrades}
+            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Refresh
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {trades.length === 0 ? (
