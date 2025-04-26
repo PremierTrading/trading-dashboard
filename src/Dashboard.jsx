@@ -92,6 +92,22 @@ export default function Dashboard() {
     );
   }
 
+  // 🧮 Calculate stats
+  let netPL = 0;
+  let wins = 0;
+  let losses = 0;
+
+  for (const trade of trades) {
+    if (typeof trade.pnl === 'number') {
+      netPL += trade.pnl;
+      if (trade.pnl > 0) wins += 1;
+      else if (trade.pnl < 0) losses += 1;
+    }
+  }
+
+  const totalTrades = wins + losses;
+  const winRate = totalTrades > 0 ? (wins / totalTrades * 100).toFixed(2) : 0;
+
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="flex justify-between items-center mb-6">
@@ -100,6 +116,30 @@ export default function Dashboard() {
           Logout
         </button>
       </div>
+
+      {/* 📈 New stats section */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white p-4 rounded shadow text-center">
+          <h2 className="text-lg font-bold">Net P&L</h2>
+          <p className={netPL >= 0 ? "text-green-600 text-xl" : "text-red-600 text-xl"}>
+            {netPL.toFixed(2)}
+          </p>
+        </div>
+        <div className="bg-white p-4 rounded shadow text-center">
+          <h2 className="text-lg font-bold">Win %</h2>
+          <p className="text-xl">{winRate}%</p>
+        </div>
+        <div className="bg-white p-4 rounded shadow text-center">
+          <h2 className="text-lg font-bold">Wins</h2>
+          <p className="text-xl">{wins}</p>
+        </div>
+        <div className="bg-white p-4 rounded shadow text-center">
+          <h2 className="text-lg font-bold">Losses</h2>
+          <p className="text-xl">{losses}</p>
+        </div>
+      </div>
+
+      {/* Existing trades display */}
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : trades.length === 0 ? (
@@ -114,3 +154,4 @@ export default function Dashboard() {
     </div>
   );
 }
+
