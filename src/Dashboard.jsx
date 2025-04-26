@@ -24,7 +24,7 @@ export default function Dashboard() {
           throw new Error('Failed to fetch trades');
         }
         const data = await response.json();
-        setTrades(data.trades);
+        setTrades(data);
       } catch (error) {
         console.error('Error fetching trades:', error);
       } finally {
