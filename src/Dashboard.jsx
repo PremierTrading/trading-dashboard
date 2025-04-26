@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import Card from './Card';
-import Tabs from './Tabs'; // ✅ Correct capitalization here!
+import Card from './Card'; // ✅ Correct import
+import Tabs from './Tabs'; // ✅ Correct import
 
-const backendUrl = "https://tradingview-webhook-7lbp.onrender.com";
+const backendUrl = "https://tradingview-webhook-7lbp.onrender.com"; // ✅ Correct backend URL
 
 export default function Dashboard() {
   const [trades, setTrades] = useState([]);
@@ -61,4 +61,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
