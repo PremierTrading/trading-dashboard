@@ -6,12 +6,13 @@ export default function Dashboard() {
   const [trades, setTrades] = useState([]);
   const [authenticated, setAuthenticated] = useState(false);
   const [inputPassword, setInputPassword] = useState("");
+  const [apiKey, setApiKey] = useState(""); // ✅ NEW STATE for API KEY
 
-  const CORRECT_PASSWORD = "Money2025"; // ← change this!
+  const CORRECT_PASSWORD = "Money2025"; // ← change this to whatever you want
 
   useEffect(() => {
-    if (!authenticated) return;
-    fetch("https://tradingview-webhook-1.onrender.com/trades")
+    if (!authenticated || !apiKey) return;
+    fetch(`https://tradingview-webhook-1.onrender.com/trades?key=${apiKey}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("📦 Trades fetched:", data);
@@ -25,7 +26,7 @@ export default function Dashboard() {
         console.error("❌ Failed to fetch trades:", err);
         setTrades([]);
       });
-  }, [authenticated]);
+  }, [authenticated, apiKey]);
 
   const totalTrades = trades.length;
   const winners = trades.filter(t => t.result === "win");
@@ -48,7 +49,13 @@ export default function Dashboard() {
           <button
             onClick={() => {
               if (inputPassword === CORRECT_PASSWORD) {
-                setAuthenticated(true);
+                const userApiKey = window.prompt("✅ Enter your API Key:");
+                if (userApiKey) {
+                  setApiKey(userApiKey);
+                  setAuthenticated(true);
+                } else {
+                  alert("❌ API Key is required!");
+                }
               } else {
                 alert("❌ Incorrect password");
               }
@@ -70,7 +77,7 @@ export default function Dashboard() {
           className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
           onClick={() => {
             if (window.confirm("Are you sure you want to clear all trades? This cannot be undone.")) {
-              fetch("https://tradingview-webhook-1.onrender.com/reset", {
+              fetch(`https://tradingview-webhook-1.onrender.com/reset?key=${apiKey}`, {
                 method: "POST"
               })
                 .then(() => {
@@ -140,3 +147,4 @@ export default function Dashboard() {
     </div>
   );
 }
+

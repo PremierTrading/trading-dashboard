@@ -1,3 +1,4 @@
+// src/tabs.jsx
 import React, { useState } from "react";
 
 export function Tabs({ children, defaultValue }) {
