@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import Card from './Card'; // ✅ Correct import
-import Tabs from './Tabs'; // ✅ Correct import
+import Card from './Card';
+import Tabs from './Tabs';
 
-const backendUrl = "https://tradingview-webhook-7lbp.onrender.com"; // ✅ Correct backend URL
+const backendUrl = "https://tradingview-webhook-7lbp.onrender.com"; // ✅ Your backend
 
 export default function Dashboard() {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [apiKey, setApiKey] = useState(localStorage.getItem('apiKey') || '');
 
   useEffect(() => {
+    if (!apiKey) {
+      setLoading(false);
+      return;
+    }
+
     const fetchTrades = async () => {
       try {
-        const apiKey = localStorage.getItem('apiKey');
-        if (!apiKey) {
-          console.error('API Key not found. Please log in again.');
-          setLoading(false);
-          return;
-        }
-
         const response = await fetch(`${backendUrl}/trades?key=${apiKey}`);
         if (!response.ok) {
           throw new Error('Failed to fetch trades');
@@ -32,12 +33,64 @@ export default function Dashboard() {
     };
 
     fetchTrades();
-  }, []);
+  }, [apiKey]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${backendUrl}/login`, {
+        method: 'POST',
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('apiKey', data.api_key);
+        setApiKey(data.api_key);
+      } else {
+        alert(data.error || "Login failed");
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Login failed. Try again.');
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('apiKey');
-    window.location.reload();
+    setApiKey('');
+    setTrades([]);
   };
+
+  if (!apiKey) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <form onSubmit={handleLogin} className="bg-white p-6 rounded shadow-md w-full max-w-sm">
+          <h2 className="text-2xl mb-4 font-bold text-center">Login</h2>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-2 mb-4 border rounded"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2 mb-4 border rounded"
+            required
+          />
+          <button type="submit" className="w-full bg-blue-500 text-white p-2 rounded">
+            Login
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 p-4">
@@ -50,7 +103,7 @@ export default function Dashboard() {
       {loading ? (
         <div className="text-center">Loading...</div>
       ) : trades.length === 0 ? (
-        <div className="text-center">No trades found or still loading...</div>
+        <div className="text-center">No trades found.</div>
       ) : (
         <Tabs>
           {trades.map((trade, index) => (
